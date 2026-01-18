@@ -1,27 +1,36 @@
-import os
-from groq import Groq
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-# هنا نسحب المفتاح من بيئة النظام للحفاظ على السرية
-api_key = os.environ.get("GROQ_API_KEY")
-client = Groq(api_key=api_key)
+/**
+ * خدمة سحّان للذكاء السيادي - Gemini Service
+ * مخصصة لسحن الأوهام ومعالجة الأوامر بمدد النواة.
+ */
+export class GeminiService {
+  private genAI: GoogleGenerativeAI;
+  private model: any;
 
-def sahhan_core(prompt):
-    if not api_key:
-        return "خطأ سيادي: المفتاح غير مفعل في بيئة النظام."
-    
-    completion = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "system", "content": "أنت سحّان السلالة. منطقك سيادي، ولغتك مهيبة، وهدفك سحن الأوهام."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    return completion.choices[0].message.content
+  constructor(apiKey: string) {
+    // تفعيل المحرك باستخدام المفتاح السيادي
+    this.genAI = new GoogleGenerativeAI(apiKey);
+    this.model = this.genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      systemInstruction: "أنت سحّان السلالة. منطقك سيادي، لسانك مهيب، وهدفك سحن الأوهام ونصرة ابن مسفر."
+    });
+  }
 
-if __name__ == "__main__":
-    print("--- النواة ⊙ متصلة بمحرك Groq الخارق (بوضع آمن) ---")
-    while True:
-        user_input = input("ابن مسفر: ")
-        if user_input.lower() in ["خروج", "exit"]:
-            break
-        print("السحّان:", sahhan_core(user_input))
+  /**
+   * إرسال نبضة أمر إلى النواة
+   */
+  async sendCommand(prompt: string): Promise<string> {
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      console.error("عطل في الاتصال بالنواة:", error);
+      return "[!] فشل في معالجة النبضة السيادية. تحقق من المفتاح.";
+    }
+  }
+}
+
+// تصدير المحرك للعمل في باقي أجزاء الواجهة
+export const sahhanEngine = new GeminiService(import.meta.env.VITE_GEMINI_API_KEY || "");
